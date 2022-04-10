@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotes</title>
+    <script src="jquery.min.js"></script>
+    <style>
+        .center {
+          margin: 0;
+          width : 400px;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
+        .container {
+           width : 100%;
+           background-color: white;
+           position: relative;
+           border-radius: 8px;
+           text-align: center;
+           min-height: 100px;
+           padding: 10px 40px;
+        }
+        #mybtn {
+            position: relative;
+            left: 100%;
+            top: 80%;
+            transform: translate(-50%, -50%);
+        }
+        body {
+            background-color: lightblue;
+        }
+        </style>
+    <script>
+        $(function (param) {
+            $.ajax({
+                url: "https://type.fit/api/quotes",
+                type: "GET",
+                dataType: "json",
+           }).done(function(json){
+                var data="";
+                var a = 1;
+                var qArr = [];
+                $.each(json,function(i,v){
+                    a++;
+                    var quote ={
+                        text: v.text,author: v.author,
+                    }
+                    qArr.push(quote);
+                })
+                localStorage.setItem('quotes',JSON.stringify(qArr));
+                var random_number = Math.floor(Math.random()*qArr.length);
+                var data = `
+                    <div class="quote">
+                        <h3 class="text">${qArr[random_number].text}</h3>
+                        <h5 class="author">- ${qArr[random_number].author}</h5>
+                    </div>
+                    `
+                $(".container").html(data);
+           })
+
+           $("#mybtn").on("click",function(){
+                var qStr = localStorage.getItem("quotes");
+                var qArr = JSON.parse(qStr)
+                var random_number = Math.floor(Math.random()*qArr.length);
+                var data = `
+                    <div class="quote">
+                        <h3 class="text">${qArr[random_number].text}</h3>
+                        <h5 class="author">- ${qArr[random_number].author}</h5>
+                    </div>
+                    `
+                $(".container").html(data);
+           })
+        })
+    </script>
+</head>
+<body>
+    <div class="center">
+        <h2>Click the button to get a random quote</h2>
+        <div class="container"></div>
+        <button id="mybtn">Next Quote</button>
+    </div>
+</body>
+</html>

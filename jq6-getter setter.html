@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JQ Getter Setter</title>
+    <script src="jquery.min.js"></script>
+    <style>
+        .para{
+            color : red;
+            font-size: 15px;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        $(function (param) {
+            let students = [
+                {name: "mgmg", age: 14,gender: "male"},
+                {name: "susu", age: 14,gender: "famale"},
+                {name: "soe", age: 15,gender: "male"},
+                {name: "ngu", age: 16,gender: "female"},
+            ];
+
+            var data = '';
+            $.each(students, function (index,value) {
+                data += `
+                    <tr>
+                        <td>${++index}</td>
+                        <td>${value.name}</td>
+                        <td>${value.age}</td>
+                        <td>${value.gender}</td>
+                    </tr>
+                `
+            })
+
+            $('tbody').html(data);
+
+            $("#myform").on('submit', function (e) {
+                e.preventDefault();
+                var username = $("#user").val();
+                console.log(username);
+
+                $("#user").val(username.trim());
+            })
+                $("#mybtn").on("click", function (param) {
+                    //var text = $("#mylink").text();
+                    //var link = $("#mylink").attr('href');
+                    //console.log(link);
+
+                    $("#mylink").text('Youtube');
+                    $("#mylink").attr('href', 'https://youtube.com' );
+                    $("#mylink").css({
+                        "text-decoration" : "none"
+                    });
+                })
+                $("#mybtnn").on("click", function (param) {
+                    $("p").addClass("para")
+                })
+        })
+    </script>
+</head>
+<body>
+    <table border="1" cellpadding = "10">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+
+    <form action="" id = "myform">
+        <input type="text" name="username" id="user"> <br>
+        <input type="submit" name="" id="" value="save">
+    </form>
+
+    <a href="https://google.com" id="mylink">Go to Google</a>
+    <button id="mybtn">Change</button>
+
+    <p>
+        Lorem ipsum dolor 
+        sit amet consectetur adipisicing elit
+        . Dolores doloremque nesciunt iusto eligendi atq
+        ue suscipit rem ratione nisi aspernatur exercitation
+        em. Cumque dicta vitae fugit iste neque nihil odio ab
+         accusamus!
+    </p>
+    
+    <button id="mybtnn">Click</button>
+</body>
+</html>

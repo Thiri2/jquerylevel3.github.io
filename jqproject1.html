@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="fontawesome/css/all.min.css">
+    <title>Tab</title>
+    <script src="sweetalert2.all.min.js"></script>
+    <style>
+        ul.link-wapper {
+            list-style-type: none;
+            margin: 20px;
+            padding: 0;
+            text-align: center;
+        }
+        ul.link-wapper li {
+            display: inline-block;
+            padding: 10px;
+        }
+        ul.link-wapper li a {
+            text-decoration: none;
+            color: black;
+            padding: 10px;
+        }
+        ul.link-wapper li a.active{
+            color: blue;
+            border-bottom: 1px solid red;
+        }
+        div .content {
+            max-width: 800px;
+            background-color: orange;
+            padding: 20px 50px;
+            margin: 0 auto 10px;
+            display: none; 
+        }
+        .grid {
+            display: grid; 
+            grid-template-columns: auto auto auto ;
+            grid-column-gap: 10px;
+            grid-row-gap: 10px;
+        }
+        .grid div {
+            border: 1px solid black;
+            text-align: center;
+        }
+        button {
+            background-color: orange;
+        }
+        button:hover{
+            background-color: white;
+        }
+        div img:hover{
+            transform: translate(6px, -5px);
+            transition-duration: 0.5s;
+        }
+        div.cart {
+            float: right;
+            margin-top: -40px;
+            padding-left: 10px;
+        }
+        div.cart:hover{
+            color: white;
+        }
+    </style>
+    <script src="jquery.min.js"></script>
+    <script>
+        $(function (param) {
+            $('.content').first().slideDown();
+
+            $('ul.link-wapper li a').on("click",function (event) { 
+                var current_tab = $(this);
+                $('ul.link-wapper li a').removeClass('active');
+                current_tab.addClass('active');
+
+                $('.content').slideUp();
+                current_tab_href = current_tab.attr('href'); //getter
+                $(current_tab_href).slideDown(); //setter
+
+                event.preventDefault();
+            })
+            //save to local storage
+            $(".add").on("click",function (param) {
+                var price = $(this).data('price');
+                var name = $(this).data('name');
+                var id = $(this).data('id');
+
+                var item = {id:id, name:name, price:price, qty:1 }
+
+                var cartArr = [];
+                var cartStr = localStorage.getItem('mycart');
+                //increase qty
+                if(!cartStr){
+                    cartArr.push(item)
+                }else{
+                    cartArr = JSON.parse(cartStr)
+
+                    var old = false
+                    $.each(cartArr, function (i,v) {
+                        if(v.id == id && old == false ){
+                            v.qty++;
+                            old = true
+                        } 
+                    })
+                    if(old == false){
+                        cartArr.push(item)
+                    }
+                }
+                //sweetalert
+                Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: 'Added to cart successfully',
+                showConfirmButton: false,
+                timer: 1500
+                })
+
+                localStorage.setItem("mycart",JSON.stringify(cartArr));
+                cartnoti();//w/o this have to reload 
+                showData();
+            })
+        
+            //cartnoti
+            cartnoti();
+            function cartnoti() {
+                var cartStr = localStorage.getItem("mycart");
+                var noticount = 0;
+                if(cartStr){
+                    var cartArr = JSON.parse(cartStr);
+                    $.each(cartArr,function (i,v) {
+                        noticount += v.qty;
+                    })
+                }
+                $("#cartnoti").html(noticount);
+            }
+
+            //cart Table
+            showData();
+            function showData() {
+                var cartStr = localStorage.getItem("mycart");
+                var data = "";
+                var total = 0;
+                if(cartStr){
+                    var cartArr = JSON.parse(cartStr);
+                    
+                    $.each(cartArr,function (i,v) {
+                        total += v.price * v.qty;
+                        data += `
+                            <tr>
+                                <td>${++i} </td>
+                                <td>${v.name}</td>
+                                <td>${add(v.price)}</td>
+                                <td>
+                                    <input type="number" value="${v.qty}" 
+                                    min="1" class="changeqty" data-index="${--i}">
+                                </td>
+                                <td>${add(v.price * v.qty)}</td>
+                                <td><button class= "btndel" 
+                                    data-index="${i}">X</button> </td>
+                            </tr>
+                            ` 
+                    })
+                    data += `
+                        <tr>
+                            <td colspan = "4">Total</td>
+                            <td colspan = "2">${add(total)}</td>
+                        </tr>
+                    `
+                }
+                $("#tbody").html(data);
+            }
+
+            //delete row
+            $("#tbody").on('click',".btndel",function (param) {
+                // var ans = confirm('Are you sure?');
+                // //console.log(ans);
+                // if(ans){
+                    
+                // }
+                Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    var index = $(this).data("index");
+                    var cartStr = localStorage.getItem("mycart");
+                    var cartArr = JSON.parse(cartStr);
+                    cartArr.splice(index,1)
+                    localStorage.setItem("mycart",JSON.stringify(cartArr));
+                    cartnoti();
+                    showData();
+                    Swal.fire(
+                    'Deleted!',
+                    'Your item has been removed.',
+                    'success'
+                    )
+                }
+                })
+            })
+
+            //change qty
+            $("#tbody").on('change',".changeqty",function (param) {
+                var qty =  Number($(this).val());
+                //console.log(qty);
+                var index = $(this).data("index");
+                //alert(index);
+                var cartStr = localStorage.getItem("mycart");
+                var cartArr = JSON.parse(cartStr);
+                cartArr[index].qty = qty;
+                localStorage.setItem("mycart",JSON.stringify(cartArr));
+                cartnoti();
+                showData();
+            })
+
+            // add comma
+            function add(price){
+                return (price).toLocaleString()
+            }
+
+            //checkout
+            $("#checkout").on('click',function (param) {
+
+                const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-danger',
+                },
+                buttonsStyling: true ,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                })
+                swalWithBootstrapButtons.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to cancel this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, checkout!', 
+                cancelButtonText: 'No, cancel!',
+                reverseButtons: true
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    swalWithBootstrapButtons.fire(
+                    'Success!',
+                    'Your order has been placed.',
+                    'Success'
+                    )
+                    var cartStr = localStorage.getItem("mycart");
+                    var cartArr = JSON.parse(cartStr);
+                    cartArr.splice(0,cartArr.length)
+                    localStorage.setItem("mycart",JSON.stringify(cartArr));
+                    cartnoti();
+                    showData();
+                } else if (
+                    /* Read more about handling dismissals below */
+                    result.dismiss === Swal.DismissReason.cancel
+                ) {
+                    swalWithBootstrapButtons.fire(
+                    'Cancelled',
+                    'Your order has been cancelled :)',
+                    'Cancel'
+                    )
+                }
+                })
+            })
+        })
+    </script>
+</head>
+<body>
+    <div class="tab">
+        <ul class="link-wapper">
+            <li>
+                <a href="#home" class="active">Home</a> 
+            </li>
+            <li>
+                <a href="#about">About</a>
+            </li>
+            <li>
+                <a href="#contact">Contact</a>
+            </li>
+            <li>
+                <a href="#shop">Shop</a>
+            </li>
+            <li>
+                <a href="#cart">Cart</a><span id="cartnoti" style="color: red;"></span>
+            </li>
+        </ul>
+
+        <div id="home" class="content">
+            <h3>Home Page</h3>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+                Nam, exercitationem perspiciatis quos itaque architecto odio! 
+                Voluptas numquam sed ducimus quia. Cumque cupiditate sapiente, 
+                nesciunt odio explicabo ab enim nostrum sunt?</p>
+        </div>
+        <div id="about" class="content">
+            <h3>About Page</h3>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+                Nam, exercitationem perspiciatis quos itaque architecto odio! 
+                Voluptas numquam sed ducimus quia. Cumque cupiditate sapiente, 
+                nesciunt odio explicabo ab enim nostrum sunt?</p>
+        </div>
+        <div id="contact" class="content">
+            <h3>Contact Page</h3>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+                Nam, exercitationem perspiciatis quos itaque architecto odio! 
+                Voluptas numquam sed ducimus quia. Cumque cupiditate sapiente, 
+                nesciunt odio explicabo ab enim nostrum sunt?</p>
+        </div>
+        <div id="shop" class="content">
+            <h3>Shop Page</h3>
+            <div>
+                <!-- <div class="cart">
+                    <div id="items">0 items 0ks&nbsp;<i class="fas fa-shopping-cart  fa-2x"></i></div>
+            </div> -->
+            <div class="grid">
+                <div><img src="images/cup1.png" alt="" width="120px" ><br> Coffee Mug - flower tree, glass <br> 1000ks <br>  <button class="add" data-name="mug1" data-price="1000" data-id="1">Add to cart</button></div>
+                <div><img src="images/cup2.png" alt="" width="120px"><br> Coffee Mug - panda, glass <br> 1500ks <br>  <button class="add" data-name="mug2" data-price="1500" data-id="2">Add to cart</button></div>
+                <div><img src="images/cup3.png" alt="" width="120px"><br> Coffee Mug - explore, glass <br> 2000ks <br>  <button class="add" data-name="mug3" data-price="2000" data-id="3">Add to cart</button></div>
+                <div><img src="images/tote1.png" alt="" width="140px"><br> Tote Bag - simple, cotton <br> 5000ks <br> <button class="add" data-name="tote1" data-price="5000" data-id="4">Add to cart</button></div>
+                <div><img src="images/tote2.png" alt="" width="140px"><br> Tote Bag - avocado, wool <br> 6000ks <br> <button class="add" data-name="tote2" data-price="6000" data-id="5">Add to cart</button></div>
+                <div><img src="images/tote3.png" alt="" width="140px"><br> Tote Bag -  cat, cotton <br> 7500ks <br>  <button class="add" data-name="tote3" data-price="7500" data-id="6">Add to cart</button></div>
+            </div>
+        </div>
+        </div>
+        <div id="cart" class="content">
+        <h3>Shopping Cart</h3>
+        <table width="100%" border="1" cellspacing = "0" >
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                    <th>Remove</th>
+                </tr>
+            </thead>
+            <tbody id="tbody">
+
+            </tbody>
+        </table> <br><br>
+        <button id="checkout">Checkout</button>
+        </div>
+    </div>
+</body>
+</html

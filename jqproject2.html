@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memes</title>
+    <script src="jquery.min.js"></script>
+    <script src="sweetalert2.all.min.js"></script>
+    <style>
+        body {
+            background-color: black;
+        }
+        #memes {
+            display: grid;
+            grid-template-columns: auto auto auto auto ;
+            grid-gap: 20px;
+        }
+        #mybtn {
+            position: relative;
+            left: 20px;
+            bottom: 10px;
+        }
+
+    </style>
+    <script>
+        $(function (param) {
+            $.ajax({
+                url : "https://api.imgflip.com/get_memes",
+                type : "GET",
+                dataType : "json"
+            }).done(function (json) {
+                var data = "";
+                $.each(json.data.memes,function (i,v) {
+                    data += `<div style = 'background-color : orange;'>
+                        <p> ${v.name} </p>
+                        <img src = '${v.url}' width = '200px' height = '200px'>
+                        <button id = 'mybtn' data-id = '${v.id}' data-bcount = '${v.box_count}'>Create Memes</button>
+                        </div>
+                    `
+                })
+                $('#memes').html(data)
+            })
+            $('#memes').on('click','button', function (param) {
+                var id = $(this).data('id');
+                var box_count = $(this).data('bcount');
+                var text = [];
+                for(var i = 0; i < box_count; i++){
+                    let text1 = prompt(`Enter your ${i+1} meme text`)
+                    text.push(text1);
+                }
+                $.post("https://api.imgflip.com/caption_image",{
+                    template_id: id,
+                    username: "ThetPaingHtut",
+                    password: "1234!@#$apple",
+                    boxes: [
+                        {
+                        "text": text[0],
+                        },{
+                        "text": text[1],
+                        },{
+                        "text": text[2],
+                        },{
+                        "text": text[3],
+                        },{
+                        "text": text[4],
+                        },{
+                        "text": text[5],
+                        },
+                ,]
+               
+            },function(response){
+                    var img = `<img src="${response.data.url}" width = "250">`
+                    $("#memes").html(img)
+                })
+            })
+        })
+    </script>
+</head>
+<body>
+    <h2 style="text-align: center; color: white;">Make your own memes</h2> <br>
+    <div id="memes">
+        
+    </div>
+</body>
+</html>
